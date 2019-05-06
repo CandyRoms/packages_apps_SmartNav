@@ -150,4 +150,7 @@ public interface Navigator extends PluginListener<NavGesture> {
 
     public default void notifyPulseScreenOn(boolean screenOn) {}
     public default void sendIntentToPulse(Intent intent) {}
+
+    // allow implementations to parse intents from receiver in fragment
+    public default void onReceive(Intent intent) {}
 }

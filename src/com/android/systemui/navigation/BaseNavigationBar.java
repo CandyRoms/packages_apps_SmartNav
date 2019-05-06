@@ -143,19 +143,13 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         }
     }
 
-    private void onReceivedIntent(Intent intent) {
+    @Override
+    public void onReceive(Intent intent) {
         if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
             notifyScreenOn(true);
         } else if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             notifyScreenOn(false);
-        } else if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            notifyBootCompleted();
-        } else {
-            onReceive(intent);
         }
-    }
-
-    public void onReceive(Intent intent) {
     }
 
     public BaseNavigationBar(Context context) {
@@ -171,14 +165,6 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         mSmartObserver = new SmartObserver(mHandler, context.getContentResolver());
         mSpringSystem = SpringSystem.create();
         sIsTablet = !ActionUtils.navigationBarCanMove();
-        IntentFilter filter = new IntentFilter();
-        filter.addAction(AudioManager.STREAM_MUTE_CHANGED_ACTION);
-        filter.addAction(AudioManager.VOLUME_CHANGED_ACTION);
-        filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGING);
-        filter.addAction(Intent.ACTION_SCREEN_ON);
-        filter.addAction(Intent.ACTION_SCREEN_OFF);
-        filter.addAction(Intent.ACTION_BOOT_COMPLETED);
-        context.registerReceiver(mReceiver, filter);
     }
 
     // require implementation
@@ -369,7 +355,7 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         if (mPulse != null) {
             mPulse.onReceive(intent);
         }
-        onReceivedIntent(intent);
+        onReceive(intent);
     }
 
     // if a bar instance is created from a user mode switch
@@ -379,9 +365,6 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
     public final void notifyInflateFromUser() {
         getBarTransitions().transitionTo(BarTransitions.MODE_TRANSPARENT, false);
         mScreenOn = true;
-        if (mPulse != null) {
-            mPulse.notifyScreenOn(mScreenOn);
-        }
         onInflateFromUser();
     }
 
@@ -427,9 +410,6 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
 
     public void notifyScreenOn(boolean screenOn) {
         mScreenOn = screenOn;
-        if (mPulse != null) {
-            mPulse.notifyScreenOn(screenOn);
-        }
         setDisabledFlags(mDisabledFlags, true);
     }
 
