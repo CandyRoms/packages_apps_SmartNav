@@ -190,9 +190,7 @@ public class FlingView extends BaseNavigationBar {
         mSmartObserver.addListener(mObservable);
     }
 
-    @Override
     public void onReceive(Intent intent) {
-        super.onReceive(intent);
         if (intent.getAction().equals(Intent.ACTION_BOOT_COMPLETED)) {
             mLogoController.setLogoIcon();
         }
@@ -431,14 +429,6 @@ public class FlingView extends BaseNavigationBar {
     protected void onDispose() {
         //unsetListeners();
         removeAllViews();
-    }
-
-    /*private void unsetListeners() {
-    }*/
-
-    @Override
-    protected void notifyBootCompleted() {
-        mLogoController.updateLogo(FlingView.this, getFlingLogo());
     }
 
     @Override

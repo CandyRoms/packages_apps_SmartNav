@@ -163,6 +163,9 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         }
     }
 
+    public void onReceive(Intent intent) {
+    }
+
     public BaseNavigationBar(Context context) {
         this(context, null);
     }
