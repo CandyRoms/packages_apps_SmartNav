@@ -143,12 +143,23 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         }
     }
 
-    @Override
-    public void onReceive(Intent intent) {
+    private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (mPulse != null) {
+                mPulse.onReceive(intent);
+            }
+            onReceivedIntent(intent);
+        }
+    };
+
+    private void onReceivedIntent(Intent intent) {
         if (Intent.ACTION_SCREEN_ON.equals(intent.getAction())) {
             notifyScreenOn(true);
         } else if (Intent.ACTION_SCREEN_OFF.equals(intent.getAction())) {
             notifyScreenOn(false);
+        } else {
+            onReceive(intent);
         }
     }
 
@@ -165,11 +176,18 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         mSmartObserver = new SmartObserver(mHandler, context.getContentResolver());
         mSpringSystem = SpringSystem.create();
         sIsTablet = !ActionUtils.navigationBarCanMove();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(AudioManager.STREAM_MUTE_CHANGED_ACTION);
+        filter.addAction(AudioManager.VOLUME_CHANGED_ACTION);
+        filter.addAction(PowerManager.ACTION_POWER_SAVE_MODE_CHANGING);
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_BOOT_COMPLETED);
+        context.registerReceiver(mReceiver, filter);
     }
 
     // require implementation
     protected abstract void onDispose();
-    protected abstract void notifyBootCompleted();
 
     // any implementation specific handling can be handled here
     protected void onInflateFromUser() {}
@@ -343,21 +361,6 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         return mCurrentView == mRot90;
     }
 
-    @Override
-    public void notifyPulseScreenOn(boolean screenOn) {
-        if (mPulse != null) {
-            mPulse.notifyScreenOn(screenOn);
-        }
-    }
-
-    @Override
-    public void sendIntentToPulse(Intent intent) {
-        if (mPulse != null) {
-            mPulse.onReceive(intent);
-        }
-        onReceive(intent);
-    }
-
     // if a bar instance is created from a user mode switch
     // PhoneStatusBar should call this. This allows the view
     // to make adjustments that are otherwise not needed when
@@ -365,6 +368,9 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
     public final void notifyInflateFromUser() {
         getBarTransitions().transitionTo(BarTransitions.MODE_TRANSPARENT, false);
         mScreenOn = true;
+        if (mPulse != null) {
+            mPulse.notifyScreenOn(mScreenOn);
+        }
         onInflateFromUser();
     }
 
@@ -400,6 +406,11 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
         }
         flushSpringSystem();
         onDispose();
+        unsetListeners();
+    }
+
+    private void unsetListeners() {
+        getContext().unregisterReceiver(mReceiver);
     }
 
     private void notifyVerticalChangedListener(boolean newVertical) {
@@ -410,6 +421,9 @@ public abstract class BaseNavigationBar extends LinearLayout implements Navigato
 
     public void notifyScreenOn(boolean screenOn) {
         mScreenOn = screenOn;
+        if (mPulse != null) {
+            mPulse.notifyScreenOn(screenOn);
+        }
         setDisabledFlags(mDisabledFlags, true);
     }
 
