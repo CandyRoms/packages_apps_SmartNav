@@ -98,7 +98,7 @@ public interface Navigator extends PluginListener<NavGesture> {
     /*
      * Introduced by @ezio84 ;D for stock navbar customizations
      */
-    public default void setFullGestureMode(boolean fullGestureMode) {}
+    public default void setFullGestureMode(boolean fullGestureMode, boolean dt2s) {}
 
     /*
      * DUI additional methods to support additional winning ;D
